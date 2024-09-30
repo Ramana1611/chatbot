@@ -1,0 +1,64 @@
+import nltk
+import random
+import re
+import numpy as np
+
+# Download NLTK data files (if you haven't already)
+nltk.download('punkt')
+nltk.download('wordnet')
+
+from nltk.stem import WordNetLemmatizer
+
+# Initialize lemmatizer
+lemmatizer = WordNetLemmatizer()
+
+# Sample dataset of user inputs and chatbot responses
+intents = {
+    "greetings": {
+        "patterns": ["Hello", "Hi", "Hey", "How are you?", "What's up?"],
+        "responses": ["Hello!", "Hi there!", "Greetings!", "How can I help you?"]
+    },
+    "goodbyes": {
+        "patterns": ["Bye", "See you later", "Goodbye", "Take care"],
+        "responses": ["Goodbye!", "See you later!", "Have a great day!"]
+    },
+    "thanks": {
+        "patterns": ["Thanks", "Thank you", "Appreciate it"],
+        "responses": ["You're welcome!", "No problem!", "Happy to help!"]
+    },
+    "options": {
+        "patterns": ["What can you do?", "Help me", "What are your abilities?"],
+        "responses": ["I can chat with you, answer questions, and provide information!"]
+    }
+}
+
+# Preprocessing function
+def preprocess_input(user_input):
+    user_input = user_input.lower()
+    user_input = re.sub(r'[^\w\s]', '', user_input)  # Remove punctuation
+    return user_input
+
+# Function to get response from the chatbot
+def get_response(user_input):
+    user_input = preprocess_input(user_input)
+
+    for intent, data in intents.items():
+        for pattern in data['patterns']:
+            if user_input == preprocess_input(pattern):
+                return random.choice(data['responses'])
+
+    return "I'm sorry, I didn't understand that."
+
+# Main chat loop
+def chat():
+    print("Chatbot: Hello! How can I assist you today?")
+    while True:
+        user_input = input("You: ")
+        if user_input.lower() in ["bye", "exit", "quit"]:
+            print("Chatbot: Goodbye! Have a great day!")
+            break
+        response = get_response(user_input)
+        print(f"Chatbot: {response}")
+
+if __name__ == "__main__":
+    chat()
