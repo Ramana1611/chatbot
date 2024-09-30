@@ -1,0 +1,4 @@
+### Instructions for Use
+- Save the Python code in a file named `chatbot.py`.
+- Create a README.md file with the provided content.
+- Make sure to install the required library before running the script. The chatbot is simple but can be expanded with more intents and responses for a richer conversation!
