@@ -1,22 +1,23 @@
+#Necessary lib
 import nltk
 import random
 import re
 import numpy as np
 
-# Download NLTK data files (if you haven't already)
+#NLTK data
 nltk.download('punkt')
 nltk.download('wordnet')
 
 from nltk.stem import WordNetLemmatizer
 
-# Initialize lemmatizer
+#Initial lemma
 lemmatizer = WordNetLemmatizer()
 
-# Sample dataset of user inputs and chatbot responses
+#dataset
 intents = {
     "greetings": {
         "patterns": ["Hello", "Hi", "Hey", "How are you?", "What's up?"],
-        "responses": ["Hello!", "Hi there!", "Greetings!", "How can I help you?"]
+        "responses": ["Hello!", "Hi there!", "Greetings!", "How can I help you today?"]
     },
     "goodbyes": {
         "patterns": ["Bye", "See you later", "Goodbye", "Take care"],
@@ -28,17 +29,136 @@ intents = {
     },
     "options": {
         "patterns": ["What can you do?", "Help me", "What are your abilities?"],
-        "responses": ["I can chat with you, answer questions, and provide information!"]
+        "responses": ["I can chat with you, answer questions, and provide travel recommendations!"]
+    },
+    "destinations": {
+        "patterns": ["Tell me about Paris", "What can I do in London?", "Tourist attractions in Rome"],
+        "responses": ["Paris is known for the Eiffel Tower, museums, and cafes!", 
+                      "London offers attractions like the British Museum, Tower of London, and Buckingham Palace!", 
+                      "Rome is famous for its history, including the Colosseum and Vatican City."]
+    },
+    "hotels": {
+        "patterns": ["Find me a hotel in New York", "Where can I stay in Tokyo?", "Hotels in Dubai"],
+        "responses": ["There are many great hotels in New York, such as The Plaza and The Peninsula.", 
+                      "In Tokyo, consider staying at The Ritz-Carlton or Park Hyatt!", 
+                      "Dubai offers luxury hotels like Burj Al Arab and Atlantis The Palm."]
+    },
+    "flights": {
+        "patterns": ["Find me a flight to Los Angeles", "Book a ticket to Sydney", "Cheap flights to Miami"],
+        "responses": ["You can check Skyscanner or Google Flights for the best deals!", 
+                      "Booking flights early can help you save money. Try Expedia or Kayak!", 
+                      "Look for discounts on airline websites like Delta, Emirates, or Southwest."]
+    },
+    "weather": {
+        "patterns": ["What's the weather in Tokyo?", "How is the weather in Berlin?", "Weather in Paris"],
+        "responses": ["I can check the latest weather for you! Try searching on a weather website.", 
+                      "Tokyo's weather varies—summers are hot and humid, while winters are cool.", 
+                      "Berlin has a temperate climate with mild summers and cold winters."]
+    },
+    "currency_exchange": {
+        "patterns": ["What is the exchange rate for USD to EUR?", "How much is 1 USD in GBP?", "Currency rate from INR to USD"],
+        "responses": ["I recommend checking XE.com or Google for the latest exchange rates!", 
+                      "You can always check the current exchange rates on currency converter websites."]
+    },
+    "restaurants": {
+        "patterns": ["Best restaurants in New York", "Where should I eat in Paris?", "Good restaurants in Rome"],
+        "responses": ["In New York, try Eleven Madison Park or Le Bernardin.", 
+                      "Paris has incredible food! Try Le Meurice or L'Ambroisie.", 
+                      "In Rome, you can’t go wrong with Antico Arco or Roscioli."]
+    },
+    "visa": {
+        "patterns": ["Do I need a visa for traveling to the USA?", "Visa requirements for Europe", "Do I need a visa for Brazil?"],
+        "responses": ["Visa requirements depend on your country of origin. Check with the embassy or consulate.", 
+                      "For European travel, you might need a Schengen visa depending on your nationality.", 
+                      "Visa requirements for Brazil vary. You can check the Brazilian embassy website for more details."]
+    },
+    "best_time_to_visit": {
+        "patterns": ["When is the best time to visit Paris?", "When should I go to Tokyo?", "Best time to travel to Egypt"],
+        "responses": ["The best time to visit Paris is in spring (April to June) or fall (September to November).", 
+                      "Tokyo is beautiful in spring for cherry blossoms and autumn for the colorful foliage.", 
+                      "Egypt is best visited in the cooler months from October to April."]
+    },
+    "transportation": {
+        "patterns": ["How do I get around New York?", "What is the best way to travel in Tokyo?", "How do I get around Paris?"],
+        "responses": ["In New York, you can use the subway, buses, or taxis.", 
+                      "In Tokyo, the subway system is very efficient. You can also use buses or taxis.", 
+                      "Paris has an extensive metro system and taxis. You can also bike around the city."]
+    },
+    "local_culture": {
+        "patterns": ["Tell me about Japanese culture", "What is unique about Italian culture?", "What should I know about Brazilian customs?"],
+        "responses": ["Japanese culture emphasizes respect, tradition, and community.", 
+                      "Italian culture is known for its art, food, and family-oriented values.", 
+                      "In Brazil, the culture is vibrant, with an emphasis on festivals, music, and food."]
+    },
+    "popular_tourist_spots": {
+        "patterns": ["What are the most popular tourist spots in Paris?", "Must-see places in London", "Top tourist attractions in Rome"],
+        "responses": ["In Paris, visit the Eiffel Tower, Louvre Museum, and Notre-Dame Cathedral.", 
+                      "In London, the Tower of London, Buckingham Palace, and British Museum are must-sees.", 
+                      "Rome’s top spots include the Colosseum, Vatican City, and Trevi Fountain."]
+    },
+    "safety_tips": {
+        "patterns": ["Is it safe to travel to New York?", "Safety tips for traveling in Paris", "How safe is it to travel to India?"],
+        "responses": ["New York is generally safe, but stay aware of your surroundings and avoid unfamiliar areas at night.", 
+                      "Paris is safe, but be cautious of pickpockets, especially around tourist attractions.", 
+                      "India is safe for tourists, but it's recommended to follow local advice and stay in well-populated areas."]
+    },
+    "packing_tips": {
+        "patterns": ["What should I pack for a trip to Paris?", "Packing tips for Japan", "What to bring to India?"],
+        "responses": ["For Paris, pack comfortable shoes, a rain jacket, and a camera!", 
+                      "In Japan, bring a power adapter, comfortable walking shoes, and an umbrella.", 
+                      "For India, pack light clothes, sunscreen, and a travel adapter."]
+    },
+    "language": {
+        "patterns": ["Do people speak English in Paris?", "Is English spoken in Tokyo?", "How do I say 'hello' in Italian?"],
+        "responses": ["In Paris, many people speak English, especially in tourist areas.", 
+                      "In Tokyo, English is spoken in some tourist areas, but it's helpful to learn basic Japanese phrases.", 
+                      "In Italy, 'Ciao' means hello! It's a friendly, informal greeting."]
+    },
+    "emergency_numbers": {
+        "patterns": ["What’s the emergency number in the USA?", "What number to call for emergencies in France?", "Emergency contact in Japan"],
+        "responses": ["In the USA, dial 911 for emergencies.", 
+                      "In France, call 112 for emergencies.", 
+                      "In Japan, dial 110 for police and 119 for fire and medical emergencies."]
+    },
+    "activities": {
+        "patterns": ["What are the best things to do in Paris?", "Activities in Tokyo", "Fun things to do in Rome"],
+        "responses": ["In Paris, try a Seine river cruise, visit museums, or explore Montmartre.", 
+                      "In Tokyo, visit Shibuya Crossing, check out the Meiji Shrine, or enjoy shopping in Harajuku.", 
+                      "In Rome, take a tour of the Colosseum, visit Vatican City, or explore ancient ruins."]
+    },
+    "food_and_drink": {
+        "patterns": ["What should I eat in Paris?", "Best food in Tokyo", "Where can I get good Italian food in Rome?"],
+        "responses": ["In Paris, try croissants, escargot, and French pastries.", 
+                      "In Tokyo, enjoy sushi, ramen, and tempura.", 
+                      "In Rome, try pasta, pizza, and authentic Italian gelato."]
+    },
+    "nightlife": {
+        "patterns": ["What is the nightlife like in New York?", "Best clubs in London", "Nightlife in Paris"],
+        "responses": ["New York has a vibrant nightlife with bars, clubs, and Broadway shows.", 
+                      "London offers everything from trendy clubs to classic pubs.", 
+                      "Paris has a rich nightlife scene with bars, clubs, and late-night cafes."]
+    },
+    "shopping": {
+        "patterns": ["Where can I shop in Paris?", "Best places to shop in New York", "Shopping malls in Tokyo"],
+        "responses": ["In Paris, head to Champs-Élysées, Le Marais, or department stores like Galeries Lafayette.", 
+                      "In New York, visit Fifth Avenue, SoHo, and the shops in Times Square.", 
+                      "In Tokyo, shop in Ginza, Shibuya, or Harajuku for trendy fashion."]
+    },
+    "romantic_spots": {
+        "patterns": ["Most romantic places in Paris", "Where can I go for a romantic dinner in Tokyo?", "Romantic destinations in Italy"],
+        "responses": ["In Paris, take a sunset cruise on the Seine or visit Montmartre.", 
+                      "In Tokyo, try a romantic dinner at the Tokyo Skytree or Odaiba.", 
+                      "In Italy, visit Venice for a gondola ride or Florence for its art and scenery."]
     }
 }
 
-# Preprocessing function
+#Preprocessing
 def preprocess_input(user_input):
     user_input = user_input.lower()
     user_input = re.sub(r'[^\w\s]', '', user_input)  # Remove punctuation
     return user_input
 
-# Function to get response from the chatbot
+#Function
 def get_response(user_input):
     user_input = preprocess_input(user_input)
 
@@ -47,15 +167,15 @@ def get_response(user_input):
             if user_input == preprocess_input(pattern):
                 return random.choice(data['responses'])
 
-    return "I'm sorry, I didn't understand that."
+    return "I'm sorry, I didn't understand that. Can you ask something else?"
 
-# Main chat loop
+#loop
 def chat():
-    print("Chatbot: Hello! How can I assist you today?")
+    print("Chatbot: Hello! How can I assist you with your travel plans today?")
     while True:
         user_input = input("You: ")
         if user_input.lower() in ["bye", "exit", "quit"]:
-            print("Chatbot: Goodbye! Have a great day!")
+            print("Chatbot: Goodbye! Have a safe journey!")
             break
         response = get_response(user_input)
         print(f"Chatbot: {response}")
